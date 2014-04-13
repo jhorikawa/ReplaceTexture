@@ -1,0 +1,39 @@
+Option Explicit
+'Script written by <Junichiro Horikawa>
+'Script copyrighted by <Junichiro Horikawa>
+'Script version Friday, August 03, 2012 7:27:28 PM
+
+Call Main()
+Sub Main()
+	Dim arrIds, strId, intInd, strObj
+	Dim strFolder, arrBasePath, strBasePath, strBaseFile, strOldFile, strNewFile, arrNewPath, strNewPath
+
+	strObj = Rhino.GetObject("pick object which has texture on it")
+	If isNull(strObj) Then
+		Exit Sub
+	End If
+	
+	intInd = Rhino.ObjectMaterialIndex(strObj)
+	strBaseFile = Rhino.MaterialTexture(intInd)
+	arrBasePath = Split(strBaseFile, "\")
+	strBasePath = Mid(strBaseFile, 1, Len(strBaseFile) - Len(arrBasePath(UBound(arrBasePath))))
+	Rhino.Print(strBasePath)
+	
+	strFolder = Rhino.BrowseForFolder(strBasePath, "select folder for new path")
+	If isNull(strFolder) Then
+		Exit Sub
+	End If
+	Rhino.EnableRedraw(False)
+	arrIds = Rhino.MaterialIds()
+	If IsArray(arrIds) Then
+		For Each strId In arrIds
+			intInd = Rhino.MaterialIndex(strId)
+			strOldFile = Rhino.MaterialTexture(intInd)
+			If Not IsNull(strOldFile) Then
+				strNewFile = Replace(strOldFile, strBasePath, strFolder)
+				Rhino.MaterialTexture intInd, strNewFile
+			End If
+		Next
+	End If
+	Rhino.EnableRedraw(True)
+End Sub
